@@ -7,9 +7,9 @@ Le sujet du TP se trouve [ici](./TP/SUJET.md)
 
 Vous devez compléter cette partie pour qu'on puisse vous identifier.  
 
-Nom : PALAZZETTI RUBERA
-Prénom : Colin
-Groupe de TP : M1 IA (classique)
+Nom : PALAZZETTI RUBERA  
+Prénom : Colin  
+Groupe de TP : M1 IA (classique)  
 
 ## Remarques particulières
 
