@@ -1,4 +1,6 @@
+"""Tests for models serialization and deserialization to/from bytes."""
 import math
+
 import pytest
 
 from models.Point import Point
@@ -8,7 +10,9 @@ from models.TriangleSet import TriangleSet
 
 
 def approx_points(p1: Point, p2: Point, rel_tol=1e-6):
-    return math.isclose(p1.x, p2.x, rel_tol=rel_tol) and math.isclose(p1.y, p2.y, rel_tol=rel_tol)
+    """Check if two points are approximately equal."""
+    return math.isclose(p1.x, p2.x, rel_tol=rel_tol) \
+        and math.isclose(p1.y, p2.y, rel_tol=rel_tol)
 
 
 def test_point_bytes():
@@ -37,7 +41,7 @@ def test_pointset_bytes():
     assert isinstance(b, (bytes, bytearray))
     ps2 = PointSet.from_bytes(b)
     assert len(ps.points) == len(ps2.points)
-    for a, bpt in zip(ps.points, ps2.points):
+    for a, bpt in zip(ps.points, ps2.points, strict=True):
         assert approx_points(a, bpt)
 
 
@@ -60,9 +64,9 @@ def test_triangles_bytes():
     T2 = TriangleSet.from_bytes(b)
     assert len(T.points) == len(T2.points)
     assert len(T.triangles) == len(T2.triangles)
-    for p_old, p_new in zip(T.points, T2.points):
+    for p_old, p_new in zip(T.points, T2.points, strict=True):
         assert approx_points(p_old, p_new)
-    for t_old, t_new in zip(T.triangles, T2.triangles):
+    for t_old, t_new in zip(T.triangles, T2.triangles, strict=True):
         assert (t_old.p1, t_old.p2, t_old.p3) == (t_new.p1, t_new.p2, t_new.p3)
 
 
@@ -77,23 +81,23 @@ def test_triangles_empty_bytes():
 
 
 def test_point_partial_bytes():
-    """Point.to_partial_bytes -> Point.from_bytes raises error on incomplete bytes."""
+    "Point.from_bytes raises error on incomplete bytes."""
     P = Point(1.0, 2.0)
     b = P.to_bytes()
     b = b[:4]  # Truncate bytes
     with pytest.raises(ValueError):
         Point.from_bytes(b)
-        
+
 def test_triangle_partial_bytes():
-    """Triangle.to_partial_bytes -> Triangle.from_bytes raises error on incomplete bytes."""
+    "Triangle.from_bytes raises error on incomplete bytes."""
     T = Triangle(0, 1, 2)
     b = T.to_bytes()
     b = b[:4]  # Truncate bytes
     with pytest.raises(ValueError):
         Triangle.from_bytes(b)
-        
+
 def test_pointset_partial_bytes():
-    """PointSet.to_bytes -> PointSet.from_bytes raises error on incomplete bytes."""
+    """PointSet.from_bytes raises error on incomplete bytes."""
     pts = [Point(0.0, 0.0), Point(1.0, 2.0)]
     ps = PointSet(points=pts)
     b = ps.to_bytes()
@@ -102,7 +106,7 @@ def test_pointset_partial_bytes():
         PointSet.from_bytes(b)
 
 def test_triangles_partial_bytes():
-    """TriangleSet.to_bytes -> TriangleSet.from_bytes raises error on incomplete bytes."""
+    """TriangleSet.from_bytes raises error on incomplete bytes."""
     pts = [Point(0.0, 0.0), Point(1.0, 0.0), Point(0.0, 1.0)]
     tris = [Triangle(0, 1, 2)]
     T = TriangleSet(points=pts, triangles=tris)

@@ -10,6 +10,15 @@ tri = Triangulator()
 
 @app.route("/triangulation/<pointSetId>", methods=["GET"])
 def get_triangulation(pointSetId: str):
+    """Endpoint to get the triangulation for a given point set ID.
+
+    Args:
+        pointSetId (str): The UUID of the point set.
+
+    Returns:
+        Response: Flask Response object.
+
+    """
     try:
         result = tri.triangulate(pointSetId)
 

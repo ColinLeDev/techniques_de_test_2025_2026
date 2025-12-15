@@ -1,3 +1,4 @@
+"""Triangulator module."""
 import urllib.error
 import urllib.request
 
@@ -6,21 +7,23 @@ from models.PointSet import PointSet
 from models.Triangle import Triangle
 from models.TriangleSet import TriangleSet
 
+
 class Triangulator:
-    """Triangulator implementation"""
+    """Triangulator implementation."""
     
     def __init__(self):
-        """Initialize Triangulator instance"""
+        """Initialize Triangulator instance."""
         self.manager_url = "http://localhost:3000"
         
     def triangulate(self, pointSetID) -> TriangleSet:
-        """Triangulate a PointSet identified by pointSetID
+        """Triangulate a PointSet identified by pointSetID.
         
         Args:
             pointSetID (str): The ID of the PointSet to triangulate.
         
         Returns:
             TriangleSet: The resulting TriangleSet after triangulation.
+
         """
         if len(pointSetID) != 36: # quick check for UUID format
             raise ValueError("Invalid PointSet ID format.")
@@ -32,15 +35,17 @@ class Triangulator:
             return triangles.to_bytes()
         
         except Exception as e:
-            raise RuntimeError(f"Triangulation failed: {e}")
+            raise RuntimeError(f"Triangulation failed: {e}") from e
             
     def get_ps(self, pointSetID) -> PointSet:
-        """Retrieve PointSet from manager service using pointSetID
+        """Retrieve PointSet from manager service using pointSetID.
         
         Args:
             pointSetID (str): The ID of the PointSet to retrieve.
+
         Returns:
             PointSet: The retrieved PointSet.
+
         """
         url = f"{self.manager_url}/pointsets/{pointSetID}"
         try:
@@ -52,21 +57,23 @@ class Triangulator:
                 case 404:
                     raise ValueError(f"PointSet with ID {pointSetID} not found.") from e
                 case 500:
-                    raise RuntimeError("Manager service encountered an internal error.")
+                    raise RuntimeError("Manager service encountered an error.") from e
                 case _:
-                    raise RuntimeError(f"Failed to retrieve PointSet: {e.reason}")
+                    raise RuntimeError(f"Failed to retrieve PointSet: {e.reason}") \
+                        from e
                 
         except Exception as e:
-            raise RuntimeError(f"Failed to retrieve PointSet: {e}")
+            raise RuntimeError(f"Failed to retrieve PointSet: {e}") from e
         
     def compute(self, pset: PointSet) -> TriangleSet:
-        """
-        Compute triangulation for the given PointSet
+        """Compute triangulation for the given PointSet.
         
         Args:
             pset (PointSet): The PointSet to triangulate.
+
         Returns:
             TriangleSet: The resulting TriangleSet after triangulation.
+
         """
         points = sorted(pset.points, key=lambda p: p.x) # Sort points by x-coordinate
         
@@ -80,7 +87,8 @@ class Triangulator:
         all_points, act_triangles = self._create_super_triangle(points)
         
         for i, pt in enumerate(points):
-            bad_triangles, new_act_triangles, def_triangles = self._find_bad_triangles(pt, act_triangles)
+            bad_triangles, new_act_triangles, def_triangles = \
+                self._find_bad_triangles(pt, act_triangles)
             final_triangles.extend(def_triangles)
             
             poly = self._fill_hole_boundary(bad_triangles)
@@ -106,11 +114,13 @@ class Triangulator:
         
         Args:
             points (list[Point]): List of points to check.
+
         Raises:
             ValueError: If all points are collinear.
+
         """
         if len(points) < 3:
-            raise ValueError("At least three points are required to check collinearity.")
+            raise ValueError("At least three points required to check collinearity.")
         
         min_x = points[0].x # points sorted by x
         max_x = points[-1].x 
@@ -130,15 +140,17 @@ class Triangulator:
             raise ValueError("All points are collinear.")
         
     def _create_super_triangle(self, points):
-        """
-        Create a super triangle that encompasses all points.
+        """Create a super triangle that encompasses all points.
+
         Args:
             points (list[Point]): List of points to encompass.
+
         Returns:
             Triangle: The super triangle.
+
         """
         if len(points) < 3:
-            raise ValueError("At least three points are required to create a super triangle.")
+            raise ValueError("At least 3 points required for superTriangle.")
         
         min_x = points[0].x # points sorted by x
         max_x = points[-1].x 
@@ -169,8 +181,7 @@ class Triangulator:
         return all_points, triangles
 
     def _find_bad_triangles(self, point, triangles):
-        """
-        Find triangles that are 'bad' with respect to the given point
+        """Find triangles that are 'bad' with respect to the given point.
         
         Args:
             triangles (list[Triangle]): List of triangles to check.
@@ -178,6 +189,7 @@ class Triangulator:
         
         Returns:
             list[Triangle]: List of bad triangles.
+
         """
         bad_triangles = [] # triangles that are 'bad' (point is inside circumcircle)
         new_triangles = [] # triangles that need to be re-evaluated later
@@ -220,8 +232,10 @@ class Triangulator:
             raise ValueError("Points are collinear; circumcircle is undefined.")
         
         # Center
-        ux = ((ax**2 + ay**2) * (by - cy) + (bx**2 + by**2) * (cy - ay) + (cx**2 + cy**2) * (ay - by)) / d
-        uy = ((ax**2 + ay**2) * (cx - bx) + (bx**2 + by**2) * (ax - cx) + (cx**2 + cy**2) * (bx - ax)) / d
+        ux = ((ax**2 + ay**2) * (by - cy) + (bx**2 + by**2) * (cy - ay) + \
+            (cx**2 + cy**2) * (ay - by)) / d
+        uy = ((ax**2 + ay**2) * (cx - bx) + (bx**2 + by**2) * (ax - cx) + \
+            (cx**2 + cy**2) * (bx - ax)) / d
         
         # Radius squared
         r_sq = (ux - ax)**2 + (uy - ay)**2
@@ -230,8 +244,7 @@ class Triangulator:
         return (ux, uy), r_sq
     
     def _triangle_area(self, p1: Point, p2: Point, p3: Point) -> float:
-        """
-        Calculate the area of a triangle given its vertices.
+        """Calculate the area of a triangle given its vertices.
         
         Args:
             p1 (Point): First vertex of the triangle.
@@ -240,18 +253,22 @@ class Triangulator:
         
         Returns:
             float: The area of the triangle.
+
         """
-        return abs((p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y)) / 2.0)
+        return abs(
+            (p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y)) 
+            / 2.0
+            )
     
     def _fill_hole_boundary(self, bad_triangles):
-        """
-        Identify the boundary edges of the polygonal hole formed by bad triangles.
+        """Identify the boundary edges of the polygonal hole formed by bad triangles.
         
         Args:
             bad_triangles (list[Triangle]): List of bad triangles.
         
         Returns:
             list[tuple[int, int]]: List of boundary edges as tuples of point indices.
+
         """
         edge_count = {}
         
@@ -268,17 +285,19 @@ class Triangulator:
         return boundary_edges
     
     def _fill_hole(self, poly, pt_index, points, triangles):
-        """
-        Fill the polygonal hole with new triangles
+        """Fill the polygonal hole with new triangles.
         
         Args:
-            poly (list[tuple[int, int]]): List of polygon edges as tuples of point indices.
+            poly (list[tuple[int, int]]): List of polygon edges.
             pt_index (int): Index of the new point being added.
             points (list[Point]): List of all points.
-            triangles (list[tuple[Triangle, float, float, float]]): Current list of triangles with circumcircle data.
+            triangles (list[tuple[Triangle, float, float, float]]):
+                Existing triangle data to update during hole filling.
+
         
         Returns:
             None
+
         """
         new_point = points[pt_index]
         

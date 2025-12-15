@@ -1,3 +1,4 @@
+"""Tests de performance pour la triangulation et l'encodage binaire des PointSets."""
 import random
 import time
 
@@ -12,18 +13,16 @@ pytestmark = pytest.mark.perf
 tri = Triangulator()
 
 
-def generate_pointset(size: int, distribution: str, amplitude: tuple = (0, 1000)) -> PointSet:
-    """
-    Génère un PointSet selon une distribution spécifique.
-    """
-    min_val, max_val = amplitude
+def generate_pointset(size: int, distribution: str, amplitude: tuple = (0, 1000)):
+    """Génère un PointSet selon une distribution spécifique."""
+    minv, maxv = amplitude
     points = []
 
     match distribution:
         case "uniform":
             # x = U(min_val, max_val), y = U(min_val, max_val)
             points = [
-                Point(random.uniform(min_val, max_val), random.uniform(min_val, max_val))
+                Point(random.uniform(minv, maxv), random.uniform(minv, maxv))
                 for _ in range(size)
             ]
         case "linear":
@@ -31,7 +30,7 @@ def generate_pointset(size: int, distribution: str, amplitude: tuple = (0, 1000)
             # x = U(min_val, max_val)
             points = []
             for _ in range(size):
-                x = random.uniform(min_val, max_val)
+                x = random.uniform(minv, maxv)
                 y = x * 1.5
                 points.append(Point(x, y))
 
@@ -45,9 +44,7 @@ def generate_pointset(size: int, distribution: str, amplitude: tuple = (0, 1000)
 @pytest.mark.parametrize("size", [100, 1000, 5000])
 @pytest.mark.parametrize("distribution", ["uniform", "linear"])
 def test_perf_triangulation_compute(size, distribution, Amplitude):
-    """
-    Temps de calcul de la triangulation.
-    """
+    """Temps de calcul de la triangulation."""
     pset = generate_pointset(size, distribution, amplitude=Amplitude)
 
     start_time = time.time()
@@ -59,13 +56,11 @@ def test_perf_triangulation_compute(size, distribution, Amplitude):
     end_time = time.time()
 
     duration = end_time - start_time
-    print(f"\n[Triangulation] {size} points ({distribution}, Amp={Amplitude}) : {duration:.4f}s")
+    print(f"\n[Triangulat°] {size} ({distribution}, Amp={Amplitude}) : {duration:.4f}s")
 
 @pytest.mark.parametrize("size", [1000, 10000])
 def test_perf_binary_encoding(size):
-    """
-    Temps d'encodage binaire d'un PointSet.
-    """
+    """Temps d'encodage binaire d'un PointSet."""
     pset = generate_pointset(size, "uniform")
 
     start_time = time.time()
