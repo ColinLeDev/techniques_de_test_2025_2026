@@ -8,3 +8,12 @@ select = [
     "SIM",
     "I",
 ]
+
+# Coverage configuration : do not test coverage of test files, venv, and main.py (in that case, dev scripts to test)
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "tests/*",
+    "*/main.py",
+    ".venv/*"
+]
