@@ -9,7 +9,7 @@ PDOC := $(VENV_BIN)/pdoc3
 PYTHON := $(VENV_BIN)/python
 PIP := $(PYTHON) -m pip
 
-.PHONY: help test unit_test perf_test coverage lint doc clean run install install_dev venv
+.PHONY: help test unit_test perf_test coverage lint lint_fix doc clean run install install_dev venv
 
 .DEFAULT_GOAL := help
 
@@ -29,6 +29,7 @@ help:
 	@echo "  make perf_test   # lance uniquement les tests marqués 'perf' (pytest -m perf)"
 	@echo "  make coverage    # génère le rapport de couverture (coverage html)"
 	@echo "  make lint        # vérifie la qualité du code (ruff check)"
+	@echo "  make lint_fix    # Corrige automatiquement les problèmes de style (ruff fix)"
 	@echo "  make doc         # génère la documentation HTML (pdoc3)"
 	@echo "  make clean       # nettoie les artefacts (coverage html dir, docs)"
 	@echo "  make clean_all   # make clean + supprime l'environnement virtuel"
@@ -58,6 +59,9 @@ coverage: install_dev
 
 lint:
 	$(RUFF) check .
+
+lint_fix:
+	$(RUFF) check . --fix
 
 doc: install_dev
 	$(PDOC) --html --output-dir docs .
